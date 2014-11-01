@@ -23,7 +23,7 @@ class BashorgQuotesPicker
     nodeAddingWorkflow = getNodeAddingWorkflow
 
     while amount > 0
-      node_set = page.parser.css(".q").take(amount)
+      node_set = page.parser.css(".q").take(amount)   
       node_set.each { |q| nodeAddingWorkflow.call(quotes, q) }
       amount -= node_set.count
       page = get_next_page(page)
@@ -76,8 +76,7 @@ class BashorgQuotesPicker
   def get_next_page(page)
     next_button = page.link_with(:text => /Далее/)
     return nil if next_button.nil?
-    #page.replace()
+
     @agent.click(next_button)
-    
   end
 end
