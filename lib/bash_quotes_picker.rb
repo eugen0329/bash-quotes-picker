@@ -17,25 +17,20 @@ class BashorgQuotesPicker
     @opts.each_key { |k| @opts[k] = opts[k] if opts.has_key?(k) }
   end
 
-  def scrape(amount)
-    document = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') { |xml| xml.root }.doc
+  def scrape(amount = 1)
+    page = @agent.get(URL)
+    quotes = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') { |xml| xml.root }.doc
     nodeAddingWorkflow = getNodeAddingWorkflow
 
-    page = @agent.get(URL)
     while amount > 0
-      nodeSet = page.parser.css(".q")
-      nodeSet = nodeSet.take(amount) if nodeSet.count > amount
-
-      nodeSet.each do |q|
-        nodeAddingWorkflow.call(document, q)
-      end
-      amount -= nodeSet.count
-      next_button = page.link_with(:text => /Далее/)
-      break if next_button.nil?
-      page = @agent.click(next_button)
+      node_set = page.parser.css(".q").take(amount)
+      node_set.each { |q| nodeAddingWorkflow.call(quotes, q) }
+      amount -= node_set.count
+      page = get_next_page(page)
+      break if page.nil?
     end
 
-    document
+    quotes
   end
 
   private 
@@ -76,5 +71,13 @@ class BashorgQuotesPicker
       attr.each { |attr,val| node[attr] = val }
     end
     node 
+  end
+
+  def get_next_page(page)
+    next_button = page.link_with(:text => /Далее/)
+    return nil if next_button.nil?
+    #page.replace()
+    @agent.click(next_button)
+    
   end
 end

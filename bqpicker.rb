@@ -21,6 +21,9 @@ end
 
 quotes = BashorgQuotesPicker.new(opts.to_hash).scrape(opts[:num].to_i)
 
-Dir.mkdir(RES_DIR) unless File.directory?(RES_DIR)
+if ! File.directory?(RES_DIR) && File.expand_path(opts[:outfile]).include?(RES_DIR)
+  Dir.mkdir(RES_DIR) 
+end
+
 File.open(opts[:outfile], "w") { |file| file << quotes.to_xml }  
 
