@@ -6,19 +6,22 @@ require "mechanize"
 require "slop"
 
 SELF_DIR = File.expand_path("../", __FILE__)
-OUT_FILE_NAME = "#{SELF_DIR}/res/quotes.out.xml"
+RES_DIR = "#{SELF_DIR}/res"
 require_relative "#{SELF_DIR}/lib/bash_quotes_picker.rb"
 
-quotes = BashorgQuotesPicker.new.parseArgs(ARGV).scrape
+opts = Slop.new(strict: true, help: true) do 
+  banner "Usage [OPTIONS]"
+  on "v", "verbose", "Verbose mode"
+  on "f=", "outfile=", "Output file", default: "#{RES_DIR}/quotes.out.xml"
+end
+begin 
+  opts.parse!(ARGV)
+rescue Slop::Error => e
+  abort(opts.help)
+end
 
-File.open(OUT_FILE_NAME, "w") { |file| file << quotes.to_xml }  
+quotes = BashorgQuotesPicker.new(opts.to_hash).scrape
 
-#begin 
-#  opts = Slop.parse(ARGV, strict: true) do
-#    on "f=", "outfile=", "Output file", default: "#{SELF_DIR}/res/quotes.out.xml"
-#  end
-#rescue Slop::Error => e                                                                                                                                          
-#  abort(e.message)                                                                                                                                               
-#end    
-#File.open(opts[:outfile], "w") { |file| file << quotes.to_xml }  
+Dir.mkdir(RES_DIR) unless File.directory?(RES_DIR)
+File.open(opts[:outfile], "w") { |file| file << quotes.to_xml }  
 

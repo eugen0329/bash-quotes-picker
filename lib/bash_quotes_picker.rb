@@ -7,24 +7,14 @@ class BashorgQuotesPicker
   include QuoteOutput
 
   URL = "http://bashorg.org/"
+  DEFAULT_OPTS = {verbose: false}
 
   attr_accessor :opts
 
-  def initialize
+  def initialize(opts = {})
     @agent = Mechanize.new { |agent| agent.user_agent = 'Custom agent' }
-    @opts = Slop.new( strict: true, help: true ) do 
-      banner "BashorgQuotesPicker: Usage [OPTIONS]"
-      on "v", "verbose", "Verbose mode"
-    end
-  end
-  
-  def parseArgs(argv)
-    begin 
-      @opts.parse!(argv)
-    rescue Slop::Error => e
-      abort(opts.help)
-    end
-    self
+    @opts = DEFAULT_OPTS
+    @opts.each_key { |k| @opts[k] = opts[k] if opts.has_key?(k) }
   end
 
   def scrape
@@ -41,7 +31,7 @@ class BashorgQuotesPicker
   private 
   
   def getNodeAddingWorkflow
-    if @opts.verbose? 
+    if @opts[:verbose]
       workflow = lambda do |doc,q|
         attr, content = getNodeData(q)
         doc.root << makeNode(doc, attr, content)
