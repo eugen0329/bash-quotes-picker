@@ -41,3 +41,4 @@ DEPENDENCIES
   colorize
   mechanize
   pry
+  slop

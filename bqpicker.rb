@@ -3,22 +3,32 @@
 require "pry"
 require "colorize"
 require "mechanize"
+require "slop"
 
 class Bqpicker
   URL = "http://bashorg.org/"
+  SELF_DIR = File.expand_path("../", __FILE__)
+
+  attr_accessor :opts
 
   def initialize
     @agent = Mechanize.new { |agent| agent.user_agent = 'Custom agent' }
+    @opts
   end
+  
+  def parseArgs(argv)
+    @opts = Slop.new( strict: true, help: true ) do 
+      banner "Usage [OPTIONS]"
 
-  def makeNode(doc, content, attr)
-    node = Nokogiri::XML::Node.new("quote", doc) do |node|
-      node.content = content.gsub("\n", "<br />")
-      attr.each { |attr,val| node[attr] = val }
+      on "v", "verbose", "Verbose mode"
+      on "f=", "file=",  "Outfile path"
     end
-    node 
+    begin 
+      @opts.parse(argv)
+    rescue Slop::Error => e
+      abort(opts.help)
+    end
   end
-
 
   def scrape
     document =  Nokogiri::XML::Builder.new(:encoding => 'UTF-8') { |xml| xml.root }.doc
@@ -27,10 +37,18 @@ class Bqpicker
       document.root << makeNode(document, content , attr.dup)
       dispQuote(attr, content)
     end
-    File.open("./res/quotes.out.xml", "w") { |file| file << document.to_xml }
+    File.open("#{SELF_DIR}/res/quotes.out.xml", "w") { |file| file << document.to_xml }
   end
 
   private 
+
+  def makeNode(doc, content, attr)
+    node = Nokogiri::XML::Node.new("quote", doc) do |node|
+      node.content = content.gsub("\n", "<br />")
+      attr.each { |attr,val| node[attr] = val }
+    end
+    node 
+  end
 
   def getNodeData(q)
       attr = {
@@ -59,4 +77,6 @@ class Bqpicker
   end
 end
 
-Bqpicker.new.scrape
+a = Bqpicker.new#.scrape
+a.parseArgs(ARGV)
+a.scrape
