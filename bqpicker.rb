@@ -13,41 +13,46 @@ class Bqpicker
 
   def initialize
     @agent = Mechanize.new { |agent| agent.user_agent = 'Custom agent' }
-    @opts
+    @opts = Slop.new( strict: true, help: true ) do 
+      banner "Usage [OPTIONS]"
+      on "v", "verbose", "Verbose mode"
+      on "f=", "outfile=",  "Outfile path", default: "#{SELF_DIR}/res/quotes.out.xml"
+    end
   end
   
   def parseArgs(argv)
-    @opts = Slop.new( strict: true, help: true ) do 
-      banner "Usage [OPTIONS]"
-
-      on "v", "verbose", "Verbose mode"
-      on "f=", "file=",  "Outfile path"
-    end
     begin 
       @opts.parse(argv)
     rescue Slop::Error => e
       abort(opts.help)
     end
+    self
   end
 
   def scrape
-    document =  Nokogiri::XML::Builder.new(:encoding => 'UTF-8') { |xml| xml.root }.doc
+    document = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') { |xml| xml.root }.doc
+
+    nodeAddingWorkflow = getNodeAddingWorkflow
     @agent.get(URL).parser.css(".q").each do |q|
-      attr, content = getNodeData(q)
-      document.root << makeNode(document, content , attr.dup)
-      dispQuote(attr, content)
+      nodeAddingWorkflow.call(document, q)
     end
-    File.open("#{SELF_DIR}/res/quotes.out.xml", "w") { |file| file << document.to_xml }
+    
+    File.open(@opts[:outfile], "w") { |file| file << document.to_xml }
   end
 
   private 
-
-  def makeNode(doc, content, attr)
-    node = Nokogiri::XML::Node.new("quote", doc) do |node|
-      node.content = content.gsub("\n", "<br />")
-      attr.each { |attr,val| node[attr] = val }
+  
+  def getNodeAddingWorkflow
+    if @opts.verbose? 
+      workflow = lambda do |doc,q|
+        attr, content = getNodeData(q)
+        doc.root << makeNode(doc, attr, content)
+        dispQuote(attr, content)
+      end
+    else
+      workflow = ->(doc, q) { doc.root << makeNode(doc, *getNodeData(q)) }
     end
-    node 
+    workflow
   end
 
   def getNodeData(q)
@@ -55,19 +60,28 @@ class Bqpicker
         head:    q.at_css("a").content, 
         rating:  q.at_css("span").content
       }
-      content = getContent(q)
+      content = getNodeContent(q)
       return attr, content
+  end
+
+  def getNodeContent(q)
+    q.at_css(".quote").css("br").each { |br| br.replace("\n") }
+    content = q.at_css(".quote").content
+  end
+
+  def makeNode(doc, attr, content)
+    node = Nokogiri::XML::Node.new("quote", doc) do |node|
+      #node.content = content.gsub("\n", "<br />")
+      node.content = content
+      attr.each { |attr,val| node[attr] = val }
+    end
+    node 
   end
 
   def dispQuote(attr, content)
     puts "#{attr[:head]}".blue
     puts "#{content}"
     puts "♥ #{colorizeRating(attr[:rating])}\n\n"
-  end
-
-  def getContent(q)
-    q.at_css(".quote").css("br").each { |br| br.replace("\n") }
-    content = q.at_css(".quote").content
   end
 
   def colorizeRating(rating)
@@ -77,6 +91,4 @@ class Bqpicker
   end
 end
 
-a = Bqpicker.new#.scrape
-a.parseArgs(ARGV)
-a.scrape
+Bqpicker.new.parseArgs(ARGV).scrape
