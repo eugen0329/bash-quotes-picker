@@ -6,6 +6,7 @@ require "slop"
 SELF_DIR = File.expand_path("../", __FILE__)
 RES_DIR = "#{SELF_DIR}/res"
 require_relative "#{SELF_DIR}/lib/bash_quotes_picker.rb"
+require_relative "#{SELF_DIR}/lib/quote_output.rb"
 
 def parse_args(argv)
   opts = Slop.new(strict: true, help: true) do 
@@ -23,6 +24,14 @@ def parse_args(argv)
   opts
 end
 
+def displayQuotes(quotes)
+  p quotes.at_css("quote").count
+  quotes.css("quote").each do |quote|
+    attr = { head: quote[:head], rating: quote[:rating] }
+    QuotesOutput::dispQuote(attr, quote.content)
+  end
+end
+
 def write_to_file(filename, doc)
   if File.expand_path(filename).include?(RES_DIR) && ! File.directory?(RES_DIR) 
     Dir.mkdir(RES_DIR) 
@@ -31,8 +40,6 @@ def write_to_file(filename, doc)
 end
 
 opts = parse_args(ARGV)
-quotes = BashorgQuotesPicker.new(opts.to_hash).scrape(opts[:num].to_i)
+quotes = BashorgQuotesPicker.new.scrape(opts[:num].to_i)
+displayQuotes(quotes) if opts.verbose?
 write_to_file(opts[:outfile], quotes)
-
-
-

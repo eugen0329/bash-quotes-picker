@@ -1,6 +1,6 @@
 require "colorize"
 
-module QuoteOutput
+module QuotesOutput
   def dispQuote(attr, content)
     puts "#{attr[:head]}".blue
     puts "#{content}"
@@ -12,4 +12,6 @@ module QuoteOutput
     rating.to_i > 0 ? color = :green : color = :red
     "#{rating}".colorize(color)
   end
+
+  module_function :colorizeRating, :dispQuote
 end
