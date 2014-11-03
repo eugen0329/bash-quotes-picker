@@ -1,17 +1,17 @@
 require "colorize"
 
 module QuotesOutput
-  def dispQuote(attr, content)
-    puts "#{attr[:head]}".blue
-    puts "#{content}"
-    puts "♥ #{colorizeRating(attr[:rating])}\n\n"
+  def disp_quote(quote)
+    puts "#{quote[:head]}".blue
+    puts "#{quote[:content]}"
+    puts "♥ #{colorize_rating(quote[:rating])}\n\n"
   end
 
-  def colorizeRating(rating)
+  def colorize_rating(rating)
     color = :default
     rating.to_i > 0 ? color = :green : color = :red
     "#{rating}".colorize(color)
   end
 
-  module_function :colorizeRating, :dispQuote
+  module_function :colorize_rating, :disp_quote
 end

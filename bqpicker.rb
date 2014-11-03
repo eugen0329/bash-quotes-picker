@@ -24,22 +24,14 @@ def parse_args(argv)
   opts
 end
 
-def displayQuotes(quotes)
-  p quotes.at_css("quote").count
-  quotes.css("quote").each do |quote|
-    attr = { head: quote[:head], rating: quote[:rating] }
-    QuotesOutput::dispQuote(attr, quote.content)
+def display_quotes(quotes)
+  quotes.each do |quote|
+    QuotesOutput::disp_quote(quote)
   end
-end
-
-def write_to_file(filename, doc)
-  if File.expand_path(filename).include?(RES_DIR) && ! File.directory?(RES_DIR) 
-    Dir.mkdir(RES_DIR) 
-  end
-  File.open(filename, "w") { |file| file << doc.to_xml }  
 end
 
 opts = parse_args(ARGV)
 quotes = BashorgQuotesPicker.new.scrape(opts[:num].to_i)
-displayQuotes(quotes) if opts.verbose?
-write_to_file(opts[:outfile], quotes)
+
+display_quotes(quotes) if opts.verbose?
+#write_to_file(opts[:outfile], quotes)
