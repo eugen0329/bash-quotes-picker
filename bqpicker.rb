@@ -32,9 +32,13 @@ def display_quotes(quotes)
 end
 
 opts = parse_args(ARGV)
-quotes = BashorgQuotesPicker.new.scrape(opts[:num])
+if opts.verbose?
+  quotes = BashorgQuotesPicker.new.scrape(opts[:num]) { |q| QuotesOutput::disp_quote(q) }
+else
+  quotes = BashorgQuotesPicker.new.scrape(opts[:num]) 
+end
 
-display_quotes(quotes) if opts.verbose?
+#display_quotes(quotes) if opts.verbose?
 
 case opts[:outformat]
 when :xml
