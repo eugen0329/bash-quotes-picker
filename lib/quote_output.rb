@@ -2,7 +2,7 @@ require "colorize"
 
 module QuotesOutput
   def disp_quote(quote)
-    puts "#{quote[:head]}".blue
+    puts "#{"#{quote[:head]}".light_blue} | #{quote[:date]} "
     puts "#{quote[:content]}"
     puts "♥ #{colorize_rating(quote[:rating])}\n\n"
   end

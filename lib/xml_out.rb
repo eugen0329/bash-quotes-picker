@@ -11,13 +11,13 @@ class XmlOut
     File.open(ofname, "w") { |f| f << xml_doc.to_xml }
   end
 
-  def self.get_xml_doc(doc, args = {})
+  def self.make_xml_doc(data, args = {})
     opts = DEFAULT_OPTS
     args.each { |k,v| opts[k] = v }
 
     xml_out_doc = Nokogiri::XML::Builder.new(encoding: opts[:encoding]) { |xml| xml.root }.doc
 
-    doc.each do |elem|
+    data.each do |elem|
       xml_out_doc.root << make_node(xml_out_doc, elem, opts[:node_name])
     end
     

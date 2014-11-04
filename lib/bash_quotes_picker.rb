@@ -34,7 +34,8 @@ class BashorgQuotesPicker
       attributes = {
         head:    q.at_css("a").content, 
         rating:  q.at_css("span").content,
-        content:  getNodeContent(q)
+        date:    q.at_css(".vote").content.scan(/\|\s(.+)\s\|/).first.first, 
+        content: getNodeContent(q)
       }
 
       attributes

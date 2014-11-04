@@ -11,7 +11,7 @@ module CsvOut
     File.open(ofname, "w") { |f| f << csv_string }
   end
 
-  def get_csv_string(data, args = {})
+  def make_csv_string(data, args = {})
     #opts = DEFAULT_OPTS
     #args.each { |k,v| opts[k] = v }
     csv_out_string = CSV.generate do |csv|
@@ -22,5 +22,5 @@ module CsvOut
     csv_out_string
   end
 
-  module_function :write, :get_csv_string
+  module_function :write, :make_csv_string
 end
