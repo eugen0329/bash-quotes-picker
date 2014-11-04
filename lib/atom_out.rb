@@ -1,5 +1,4 @@
 require "nokogiri"
-require "fileutils"
 
 class AtomOut
   DEFAULT_OPTS = {

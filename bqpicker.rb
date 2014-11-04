@@ -31,6 +31,21 @@ def display_quotes(quotes)
   end
 end
 
+def write_in_atom_format(quotes, ofname)
+  a = AtomOut.new 
+  atom_out_doc = a.make_atom_doc(quotes) do |doc,feed|
+    quotes.each do |quote|
+      feed << a.make_entry(doc) do |entry|
+        entry[:title] = quote[:head]
+        entry[:updated] = quote[:date]
+        entry[:summary] = quote[:content]
+      end
+    end
+  end
+  XmlOut.write_to_file(atom_out_doc, ofname)
+
+end
+
 opts = parse_args(ARGV)
 if opts.verbose?
   quotes = BashorgQuotesPicker.new.scrape(opts[:num]) { |q| QuotesOutput::disp_quote(q) }
@@ -42,22 +57,12 @@ end
 
 case opts[:outformat]
 when :xml
-  xml_out_doc = XmlOut::make_xml_doc(quotes, node_name: "quote")
-  XmlOut::write(xml_out_doc, opts[:ofname])
+  xml_out_doc = XmlOut.make_xml_doc(quotes, node_name: "quote")
+  XmlOut.write_to_file(xml_out_doc, opts[:ofname])
 when :csv
-  csv_out = CsvOut::make_csv_string(quotes)
-  CsvOut::write(csv_out, opts[:ofname])
+  csv_out = CSV.generate_from_hash(quotes)
+  CSV.write_to_file(csv_out, opts[:ofname])
 when :atom
-  a = AtomOut::new 
-  atom_out_doc = a.make_atom_doc(quotes) do |doc,feed|
-    quotes.each do |quote|
-      feed << a.make_entry(doc) do |entry|
-        entry[:title] = quote[:head]
-        entry[:updated] = quote[:date]
-        entry[:summary] = quote[:content]
-      end
-    end
-  end
-  XmlOut::write(atom_out_doc, opts[:ofname])
+  write_in_atom_format(quotes, opts[:ofname])
 end
 

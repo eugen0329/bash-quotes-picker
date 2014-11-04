@@ -4,7 +4,7 @@ require "fileutils"
 class XmlOut
   DEFAULT_OPTS = {encoding: 'UTF-8', node_name: 'node'}
 
-  def self.write(xml_doc, ofname)
+  def self.write_to_file(xml_doc, ofname)
     ofdir = File.expand_path("../", ofname)
     FileUtils.mkdir_p(ofdir) unless File.directory?(ofdir)
 
