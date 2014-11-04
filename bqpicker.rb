@@ -33,17 +33,19 @@ end
 
 def write_in_atom_format(quotes, ofname)
   a = AtomOut.new 
+
   atom_out_doc = a.make_atom_doc(quotes) do |doc,feed|
     quotes.each do |quote|
       feed << a.make_entry(doc) do |entry|
-        entry[:title] = quote[:head]
+        entry[:title]   = quote[:head]
         entry[:updated] = quote[:date]
+        entry[:link]    = quote[:href]
         entry[:summary] = quote[:content]
       end
     end
   end
-  XmlOut.write_to_file(atom_out_doc, ofname)
 
+  XmlOut.write_to_file(atom_out_doc, ofname)
 end
 
 opts = parse_args(ARGV)

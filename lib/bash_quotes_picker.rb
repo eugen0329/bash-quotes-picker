@@ -1,7 +1,7 @@
 require "mechanize"
 
 class BashorgQuotesPicker
-  URL = "http://bashorg.org/"
+  URL = "http://bashorg.org"
 
   attr_accessor :opts
 
@@ -35,6 +35,7 @@ class BashorgQuotesPicker
         head:    q.at_css("a").content, 
         rating:  q.at_css("span").content,
         date:    q.at_css(".vote").content.scan(/\|\s(.+)\s\|/).first.first, 
+        href:    "#{URL}#{q.at_css(".vote").at_css("a")[:href]}", 
         content: getNodeContent(q)
       }
 
