@@ -1,4 +1,5 @@
 require "nokogiri"
+require_relative "time_patch"
 
 class AtomOut
   DEFAULT_OPTS = {
